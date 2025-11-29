@@ -2,16 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
-import fs from "fs";
-import {
-  Connection,
-  PublicKey,
-  Keypair
-} from "@solana/web3.js";
-import {
-  getOrCreateAssociatedTokenAccount,
-  transfer
-} from "@solana/spl-token";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 dotenv.config();
 
@@ -19,13 +10,30 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Backend test route (for React connection)
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Բարև frontend-ից!" });
+const connection = new Connection(process.env.RPC_URL, "confirmed");
+
+app.post("/api/payment", async (req, res) => {
+  try {
+    const { buyer, amount, transaction } = req.body;
+
+    if (!buyer || !amount || !transaction) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
+
+    const txInfo = await connection.getTransaction(transaction);
+
+    if (!txInfo) {
+      return res.status(400).json({ error: "Transaction not found" });
+    }
+
+    res.json({ success: true, message: "Transaction verified" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
-// 🔗 Solana connection setup
-const connection = new Connection(process.env.RPC_URL, "confirmed");
-const payer = Keypair.fromSecretKey(
-  Uint8Array.from(JSON.parse(fs.readFileSync(process.env.PAYER_KEYPATH, "utf8")))
-);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
