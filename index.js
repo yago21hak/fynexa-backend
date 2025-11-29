@@ -32,12 +32,12 @@ app.post("/api/payment", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Բարև frontend-ից!" });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Բարև frontend-ից!" });
-});
